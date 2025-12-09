@@ -1,4 +1,4 @@
-# 🔒 PassMAnager - Local Password Manager
+# 🔒 PassManager - Local Password Manager
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
 ![Flet](https://img.shields.io/badge/Flet-UI-purple)
