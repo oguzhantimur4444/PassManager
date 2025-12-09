@@ -8,7 +8,6 @@
 **Secure Vault** is a modern, secure, and offline password manager desktop application built with Python and Flet. It uses strong industry-standard encryption to keep your credentials safe locally on your machine.
 
 ![App Screenshot](screenshot.png)
-*(Note: Add a screenshot of your app here named screenshot.png)*
 
 ## ✨ Features
 
