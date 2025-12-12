@@ -39,5 +39,6 @@
     "menu_delete": "Delete",
     "new_val": "New Value",
     "change_user": "Change Username",
-    "change_pass": "Change Password"
+    "change_pass": "Change Password",
+    "gen_pass": "Generate Random Password"
 }
