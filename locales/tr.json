@@ -39,5 +39,6 @@
     "menu_delete": "Sil",
     "new_val": "Yeni Değer",
     "change_user": "Kullanıcı Adı Değiştir",
-    "change_pass": "Şifre Değiştir"
+    "change_pass": "Şifre Değiştir",
+    "gen_pass": "Rastgele Şifre Oluştur"
 }

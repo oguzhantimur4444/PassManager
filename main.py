@@ -2,6 +2,8 @@ import flet as ft
 import db_manager as db
 import json
 import os
+import random
+import string # Şifre üretmek için gerekli
 
 def main(page: ft.Page):
     # --- Sayfa Ayarları ---
@@ -12,27 +14,23 @@ def main(page: ft.Page):
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
     
     # --- DİNAMİK DİL YÜKLEME ---
-    loaded_locales = {} # Tüm dilleri buraya yükleyeceğiz
+    loaded_locales = {} 
     
     def load_languages():
-        """locales klasöründeki tüm .json dosyalarını okur"""
         if not os.path.exists("locales"):
             os.makedirs("locales")
             
         for filename in os.listdir("locales"):
             if filename.endswith(".json"):
-                lang_code = filename.split(".")[0] # tr.json -> tr
+                lang_code = filename.split(".")[0]
                 try:
                     with open(f"locales/{filename}", "r", encoding="utf-8") as f:
                         loaded_locales[lang_code] = json.load(f)
-                        print(f"Dil yüklendi: {lang_code}")
                 except Exception as e:
                     print(f"Hata: {filename} yüklenemedi. {e}")
 
-    # Başlangıçta dilleri yükle
     load_languages()
     
-    # Varsayılan dil ayarı (Eğer tr yoksa ilk bulduğunu seç)
     default_lang = "tr" if "tr" in loaded_locales else (list(loaded_locales.keys())[0] if loaded_locales else "en")
 
     app_state = {
@@ -47,10 +45,11 @@ def main(page: ft.Page):
     # --- ÇEVİRİ FONKSİYONU ---
     def tr(key):
         current_lang_data = loaded_locales.get(app_state["lang"], {})
-        return current_lang_data.get(key, key) # Bulamazsa anahtarın kendisini döndür
+        return current_lang_data.get(key, key)
 
     def change_language(e):
         app_state["lang"] = e.control.value
+        # Dil değişince sayfayı yenile
         if app_state["encryption_key"]:
             show_dashboard()
         else:
@@ -74,22 +73,50 @@ def main(page: ft.Page):
     
     txt_new_web = ft.TextField(icon="public", **input_style)
     txt_new_user = ft.TextField(icon="person", **input_style)
-    txt_new_pass = ft.TextField(password=True, can_reveal_password=True, icon="lock", **input_style)
+    
+    # --- RASTGELE ŞİFRE ÜRETME FONKSİYONU ---
+    # --- RASTGELE ŞİFRE ÜRETME FONKSİYONU ---
+    def generate_random_password(e):
+        # Şifre havuzu
+        characters = string.ascii_letters + string.digits + "!@#$%^&*"
+        # 16 haneli şifre üret
+        password = "".join(random.choice(characters) for _ in range(16))
+        
+        # Şifreyi kutuya yaz
+        txt_new_pass.value = password
+        
+        # DİKKAT: Aşağıdaki satırı SİLDİK. 
+        # txt_new_pass.password = False  <-- Bu satır silindiği için göz ikonu gitmeyecek.
+        
+        # Kullanıcıya bilgi verelim
+        page.snack_bar = ft.SnackBar(ft.Text("Rastgele şifre oluşturuldu! (Görmek için göze basınız)"), open=True)
+        page.update()
+
+    # Şifre Kutusuna Buton (Suffix) Ekliyoruz
+    txt_new_pass = ft.TextField(
+        password=True, 
+        can_reveal_password=True, 
+        icon="lock", 
+        **input_style,
+        suffix=ft.IconButton(
+            icon="shuffle", 
+            on_click=generate_random_password,
+            tooltip="Generate" # İlk başta boş kalmasın diye
+        )
+    )
 
     txt_edit_value = ft.TextField(**input_style)
 
     # --- DİNAMİK DROPDOWN ---
-    # Klasörden hangi dilleri bulduysak onları listeye ekliyoruz
     lang_options = []
     for code, data in loaded_locales.items():
-        # JSON içindeki "name" alanını kullanıyoruz (Örn: "Türkçe")
         display_name = data.get("name", code.upper())
         lang_options.append(ft.dropdown.Option(code, display_name))
 
     dd_lang = ft.Dropdown(
         width=100,
         value=app_state["lang"],
-        options=lang_options, # Dinamik liste
+        options=lang_options,
         on_change=change_language,
         content_padding=5,
         text_size=12,
@@ -210,8 +237,12 @@ def main(page: ft.Page):
         txt_new_user.label = tr("username")
         txt_new_pass.label = tr("password")
         
+        # HATA VEREN KISIM BURASIYDI, ARTIK DÜZELDİ:
+        if txt_new_pass.suffix:
+            txt_new_pass.suffix.tooltip = tr("gen_pass")
+        
         dlg_add.title = ft.Text(tr("add_title"))
-        dlg_add.content = ft.Column([ft.Container(height=10), txt_new_web, txt_new_user, txt_new_pass], height=280, width=300)
+        dlg_add.content = ft.Column([ft.Container(height=10), txt_new_web, txt_new_user, txt_new_pass], height=220, width=300)
         dlg_add.actions = [
             ft.TextButton(tr("cancel"), on_click=lambda e: page.close(dlg_add)),
             ft.ElevatedButton(tr("save"), on_click=lambda e: add_item(), bgcolor="blue", color="white")
